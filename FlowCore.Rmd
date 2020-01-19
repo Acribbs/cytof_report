@@ -15,6 +15,8 @@ library(R.utils)
 library(yaml)
 library(tidyverse)
 library(SingleCellExperiment)
+library(scater)
+library(diffcyt)
 config <- yaml.load("config.yml")
 ```
 
@@ -184,7 +186,7 @@ for (i in design_files){
 
 <!--Remember to add overriding clustering names here -->
 
-# Heatmap
+# Heatmap {.tabset .tabset-fade}
 
 Clusterings and metaclusters maybe be viewing with the plotClusterHeatmap. In its 1st panel, the function will display median (arcsinh-transformed and optionally scaled) cell-type marker expressions (across all samples). Depending on argument hm2, the 2nd panel will vary as follows:
 
@@ -206,39 +208,70 @@ for (i in design_files){
 ```
 
 
-# Clustering 
+## Relative population abundances {.tabset .tabset-fade}
 
-```{r}
+Relative population abundances for any clustering of interest can be plotted with plotAbundances. Argument by will specify whether to plot proportions for each sample or cluster.
+If by = "sample_id", the function displays each sample’s cell type composition, and the size of a given stripe reflects the proportion of the corresponding cell type the given sample. Argument group then specifies the facetting. If by = "cluster_id", argument group then specifies the grouping and color coding.
 
-daf <- cluster(daf, cols_to_use=colnames(daf), xdim = 10, ydim = 10 ,maxK =20, seed = 1234)
-
-plotClusterHeatmap(daf, hm2= NULL, k = "meta12", m = NULL, draw_freqs = TRUE)
-
-```
-
-# UMAP
-
-```{r}
-
-daf <- runDR(daf, "TSNE", rows_to_use=1000, overwrite = TRUE)
-daf <- runDR(daf, "UMAP", rows_to_use=1000, overwrite = TRUE)
-
-plotDR(daf, "TSNE", color_by = "meta12")
+```{r, results='asis', echo = FALSE}
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  
+  cat("### ",i,"\n")
+  p <- plotAbundances(sce, k = "meta12", by = "sample_id", group_by = "condition")
+  print(p)
+  cat('\n\n')
+}
 ```
 
 
-# TSNE condition
-
-```{r}
-plotDR(daf, "TSNE", color_by = "CD38", facet= "patient_id")
+```{r, results='asis', echo = FALSE}
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  
+  cat("### ",i,"\n")
+  p <- plotAbundances(sce, k = "merging1", by = "cluster_id", group_by = "condition", shape_by = "patient_id")
+  print(p)
+  cat('\n\n')
+}
 ```
 
-# TSNE 
 
-```{r}
-plotDR(daf, "TSNE", color_by = "meta12", facet= "patient_id")
+# Dimensionality reduction 
+
+## UMAP {.tabset .tabset-fade}
+
+```{r, results='asis', echo = FALSE}
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  set.seed(1601)
+  sce <- scater::runUMAP(sce, exprs_values = "exprs")
+  cat("### ",i,"\n")
+  p <- plotDR(sce, "UMAP", color_by = "meta12") + facet_wrap("condition")
+  print(p)
+  cat('\n\n')
+}
 ```
 
+## TSNE {.tabset .tabset-fade}
+
+```{r, results='asis', echo = FALSE}
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  set.seed(1601)
+  sce <- scater::runTSNE(sce, exprs_values = "exprs")
+  cat("### ",i,"\n")
+  p <- plotDR(sce, "TSNE", color_by = "meta12") + facet_wrap("condition")
+  print(p)
+  cat('\n\n')
+}
+```
+
+# Differential analysis {.tabset .tabset-fade}
+
+To be completed when we have full data and not just test data
+
 ```{r}
-plotDR(daf, "TSNE", color_by = "Ki67", facet= "patient_id")
+#design <- createDesignMatrix(ei(sce), cols_design = "condition")
+#contrast <- createContrast(c(0, 1))
 ```
