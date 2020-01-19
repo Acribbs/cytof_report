@@ -4,5 +4,14 @@ output: html_document
 ---
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-This report contains the output of cytof analysis 
+This report contains the output of cytof analysis.
+
+In order to run this report you will need the following input files:
+
+* One or more design file(s) named design_<experimentName>_<SomethingElse>.csv.
+* A csv file containing the metals expressed in the samples.
+* fcs files
+
+All input files are reuired to be placed within the directory of the repository before running the report.
+
 
