@@ -1,0 +1,59 @@
+name: CyTOF
+navbar:
+  title: CyTOF analysis
+  right:
+  - text: Home
+    href: index.html
+  - text: Total analysis
+    icon: fa-link
+    href: Total_samples.html
+  - text: Wild-type analysis
+    icon: fa-link
+    href: wt_sample.html
+  - text: AMO
+    icon: fa-link
+    href: amo_sample.html
+  - text: df15
+    icon: fa-link
+    href: df15_sample.html
+  - text: ejm
+    icon: fa-link
+    href: ejm_sample.html
+  - text: h929
+    icon: fa-link
+    href: h929_sample.html
+  - text: km12bm
+    icon: fa-link
+    href: km12bm_sample.html
+  - text: km12pe
+    icon: fa-link
+    href: km12pe_sample.html
+  - text: mm1r
+    icon: fa-link
+    href: mm1r_sample.html
+  - text: mm15
+    icon: fa-link
+    href: mm15_sample.html
+  - text: U266
+    icon: fa-link
+    href: u266_sample.html
+output:
+  html_document:
+    css: style.css
+    fig_caption: yes
+    theme: cerulean
+    highlight: textmate
+    toc: yes
+    toc_depth: 2
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+    lib_dir: site_libs
+    self_contained: no
+exclude:
+- rds
+- counts
+- expdata
+- '*.R'
+output_dir: _site
+

@@ -1,0 +1,95 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(cache=FALSE, warning = FALSE)
+library(flowCore)
+library(CATALYST)
+library(umap)
+```
+
+```{r input}
+# design_<dir>_.csv
+design_files <- list.files(pattern = "design_")
+
+for (i in design_files){
+  md <- read.csv(i)
+  fcs_files <- list.files(path = ".", pattern = ".fcs$", full.names = T)
+  fs <- read.flowSet(fcs_files, transformation = FALSE, truncate_max_range = FALSE)
+  
+  
+  panel <- read.csv("metals_meta_expressed.csv", stringsAsFactors = T)
+
+  md$condition <- factor(md$condition, levels = "amo")
+  md$sample_id <- factor(md$sample_id, levels = md$sample_id[order(md$condition)])
+  
+  sce <- prepData(fs, panel, md)
+}
+```
+
+# Plot expression
+
+```{r expression}
+p <- plotExprs(daf, color_by="patient_id")
+p$facet$params$ncol <- 6
+#png("plotExprs.png", width = 1400, height = 1400)
+#p
+#dev.off()
+p
+```
+
+# Plot counts
+
+```{r counts}
+#png("plotCounts.png")
+#plotCounts(daf, color_by = "condition")
+#dev.off()
+plotCounts(daf, color_by = "patient_id")
+```
+
+
+# Heatmap
+
+```{r heatmap}
+plotExprHeatmap(daf, color_by="patient_id", draw_freqs=FALSE)
+```
+
+# Clustering 
+
+```{r}
+
+daf <- cluster(daf, cols_to_use=colnames(daf), xdim = 10, ydim = 10 ,maxK =20, seed = 1234)
+
+plotClusterHeatmap(daf, hm2= NULL, k = "meta12", m = NULL, draw_freqs = TRUE)
+
+```
+
+# UMAP
+
+```{r}
+
+daf <- runDR(daf, "TSNE", rows_to_use=1000, overwrite = TRUE)
+daf <- runDR(daf, "UMAP", rows_to_use=1000, overwrite = TRUE)
+
+plotDR(daf, "TSNE", color_by = "meta12")
+```
+
+
+# TSNE condition
+
+```{r}
+plotDR(daf, "TSNE", color_by = "CD38", facet= "patient_id")
+```
+
+# TSNE 
+
+```{r}
+plotDR(daf, "TSNE", color_by = "meta12", facet= "patient_id")
+```
+
+```{r}
+plotDR(daf, "TSNE", color_by = "Ki67", facet= "patient_id")
+```
