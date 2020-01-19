@@ -1,6 +1,8 @@
 ---
-title: "Untitled"
-output: html_document
+title: "FlowCore analysis"
+output:
+  html_document:
+    code_folding: hide
 ---
 
 
@@ -10,6 +12,10 @@ library(flowCore)
 library(CATALYST)
 library(umap)
 library(R.utils)
+library(yaml)
+library(tidyverse)
+library(SingleCellExperiment)
+config <- yaml.load("config.yml")
 ```
 
 # Input data
@@ -58,34 +64,147 @@ for (i in design_files){
 }
 ```
 
-# Plot expression
+## Plot counts {.tabset .tabset-fade}
 
-```{r expression}
+```{r expression, results='asis', echo = FALSE}
 
-
-p <- plotExprs(daf, color_by="patient_id")
-p$facet$params$ncol <- 6
-#png("plotExprs.png", width = 1400, height = 1400)
-#p
-#dev.off()
-p
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  cat("### ",i,"\n")
+  p <- plotCounts(sce, color_by = "condition")
+  print(p)
+  cat('\n\n')
+}
 ```
 
-# Plot counts
+## Multi-dimensional scaling {.tabset .tabset-fade}
 
-```{r counts}
-#png("plotCounts.png")
-#plotCounts(daf, color_by = "condition")
-#dev.off()
-plotCounts(daf, color_by = "patient_id")
+```{r MDS, results='asis', echo = FALSE}
+
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  cat("### ",i,"\n")
+  p <- plotMDS(sce, color_by = "condition")
+  print(p)
+  cat('\n\n')
+}
 ```
 
+
+## Heatmap of (scaled) median marker expressions {.tabset .tabset-fade}
+
+plotExprHeatmap will show a heatmap on median marker intensities with hierarchically clustered rows (samples) and columns (markers). This plot should give an idea of which markers will drive sample clustering, and how similiar samples are in their expression profile. We specify bin_anno = TRUE to display expression values inside each bin, and row_anno = TRUE to include row annotations for each factor in metadata(daf).
+
+```{r marker expression, results='asis', echo = FALSE}
+
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  cat("### ",i,"\n")
+  p <- plotExprHeatmap(sce, bin_anno = TRUE, row_anno = TRUE)
+  print(p)
+  cat('\n\n')
+}
+```
+
+
+## Cluster cells {.tabset .tabset-fade}
+
+Cluster cells based on the use_for_clustering in the panel data table.
+
+```{r counts, results='asis', echo = FALSE}
+# specify markers to use for clustering
+
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  lineage_markers <- panel %>% 
+    filter(use_for_clustering == TRUE) %>% 
+    select(antigen) 
+
+  sce <- cluster(sce, features = lineage_markers$antigen, 
+      xdim = 10, ydim = 10, maxK = 20, verbose = FALSE, seed = 1)  
+
+  p <- plotMedExprs(sce, k = "meta8", facet = "cluster_id", 
+    group_by = "condition", shape_by = "patient_id")
+  p$facet$params$ncol <- 4
+  
+  cat("### ",i,"\n")
+  print(p)
+  cat('\n\n')
+
+  assign(paste("sce", i, sep = "."), sce)
+}
+```
+
+## Delta area plot {.tabset .tabset-fade}
+
+The delta area represents the amount of extra cluster stability gained when clustering into k groups as compared to k-1 groups. It can be expected that high stability of clusters can be reached when clustering into the number of groups that best fits the data. The “natural” number of clusters present in the data should thus corresponds to the value of k where there is no longer a considerable increase in stability (pleateau onset). For more details, the user can refer to the original description of the consensus clustering method (Monti et al. 2003).
+
+```{r, delta_plot, results='asis', echo = FALSE}
+
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  
+  cat("### ",i,"\n")
+  print(metadata(sce)$delta_area)
+  cat('\n\n')
+}
+```
+
+## Median marker-expressions by cluster {.tabset .tabset-fade}
+
+We can facet the above plot by antigen in order to compare marker expressions calculated over all cells across conditions
+
+```{r, results='asis', echo = FALSE}
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  
+  cat("### ",i,"\n")
+  p <- plotMedExprs(sce, facet = "antigen", 
+    group_by = "condition", shape_by = "patient_id")
+p$facet$params$ncol <- 4
+print(p)
+  cat('\n\n')
+}
+```
+
+## Marker-densities by cluster {.tabset .tabset-fade}
+
+Distributions of marker intensities (arcsinh-transformed) across cell populations of interest can be plotted with plotClusterExprs. We specify features = "type" (equivalent to type_markers(sce)), to include type-markers only. Here, blue densities are calculated over all cells and serve as a reference.
+
+```{r, results='asis', echo = FALSE}
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  
+  cat("### ",i,"\n")
+  p <- plotClusterExprs(sce, k = "meta8", features = "type")
+  print(p)
+  cat('\n\n')
+}
+```
+
+<!--Remember to add overriding clustering names here -->
 
 # Heatmap
 
-```{r heatmap}
-plotExprHeatmap(daf, color_by="patient_id", draw_freqs=FALSE)
+Clusterings and metaclusters maybe be viewing with the plotClusterHeatmap. In its 1st panel, the function will display median (arcsinh-transformed and optionally scaled) cell-type marker expressions (across all samples). Depending on argument hm2, the 2nd panel will vary as follows:
+
+"abundances": cluster frequencies by sample;
+"state_markers": median cell state marker expressions across clusters (analogous to the left-hand side heatmap);
+a character string/vector corresponding to one/multiple marker(s): median marker expressions by sample.
+Argument scale (default TRUE) specifies whether scaled values should be plotted. These correspond to arcsinh-transformed expression values scaled between 0 and 1 using low (1%) and high (99%) percentiles as boundaries. Note that, in any case, hierarchical clustering is performed on the unscaled data.
+While it is only used here for visualization, this additional transformation of the arcsinh-transformed data can sometimes give a better representation of relative differences in marker expression between cell populations.
+
+```{r, results='asis', echo = FALSE}
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  
+  cat("### ",i,"\n")
+  p <- plotClusterHeatmap(sce, hm2 = "abundances", draw_freqs = TRUE, cluster_anno = FALSE)
+  print(p)
+  cat('\n\n')
+}
 ```
+
 
 # Clustering 
 
