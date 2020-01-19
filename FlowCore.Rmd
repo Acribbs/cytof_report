@@ -9,15 +9,41 @@ knitr::opts_chunk$set(cache=FALSE, warning = FALSE)
 library(flowCore)
 library(CATALYST)
 library(umap)
+library(R.utils)
 ```
 
+# Input data
+
+Input the data from design file into a SingleCellExperiment class object using the wrapper function prepData from CATALYST. 
+
 ```{r input}
-# design_<dir>_.csv
+# design_<dir>_<sample>.csv
 design_files <- list.files(pattern = "design_")
 
 for (i in design_files){
+  x <- strsplit(i, "_")
+  dir_files <- x[[1]][2]
+  dir_files <- paste0("input/", dir_files)
+  dir.create(file.path("input"), showWarnings = FALSE)
+  dir.create(file.path(dir_files), showWarnings = FALSE)
+  
   md <- read.csv(i)
-  fcs_files <- list.files(path = ".", pattern = ".fcs$", full.names = T)
+
+  file_names <- as.vector(md$file_name)
+  linked_files <- gsub("./","", file_names)
+  linked_files <- paste0(getwd(), "/" ,linked_files)
+  
+  
+  output_dir <- paste0(getwd(), "/", dir_files, "/")
+  
+  
+  for (y in linked_files){
+    file.symlink(y, output_dir)
+  } 
+  
+  
+  fcs_files <- list.files(path = output_dir, pattern = ".fcs$", full.names = T)
+  md$file_name <- fcs_files
   fs <- read.flowSet(fcs_files, transformation = FALSE, truncate_max_range = FALSE)
   
   
@@ -27,12 +53,16 @@ for (i in design_files){
   md$sample_id <- factor(md$sample_id, levels = md$sample_id[order(md$condition)])
   
   sce <- prepData(fs, panel, md)
+  
+  assign(paste("sce", i, sep = "."), sce)
 }
 ```
 
 # Plot expression
 
 ```{r expression}
+
+
 p <- plotExprs(daf, color_by="patient_id")
 p$facet$params$ncol <- 6
 #png("plotExprs.png", width = 1400, height = 1400)
