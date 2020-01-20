@@ -7,7 +7,7 @@ output:
 
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(cache=FALSE, warning = FALSE)
+knitr::opts_chunk$set(cache=TRUE, warning = FALSE)
 library(flowCore)
 library(CATALYST)
 library(umap)
@@ -256,21 +256,6 @@ for (i in design_files){
 }
 ```
 
-## MDS {.tabset .tabset-fade}
-
-```{r MDS, results='asis', echo = FALSE}
-
-for (i in design_files){
-  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
-  cat("### ",i,"\n")
-  sce <- scater::runMDS(sce, exprs_values = "exprs")
-  p <- plotDR(sce, "UMAP", color_by = "meta12") + facet_wrap("condition")
-  print(p)
-  cat('\n\n')
-
-}
-
-```
 
 ## TSNE {.tabset .tabset-fade}
 
