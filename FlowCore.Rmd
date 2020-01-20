@@ -30,8 +30,10 @@ design_files <- list.files(pattern = "design_")
 
 for (i in design_files){
   x <- strsplit(i, "_")
-  dir_files <- x[[1]][2]
-  dir_files <- paste0("input/", dir_files)
+  condition <- x[[1]][2]
+  value <- x[[1]][3]
+  value <- gsub(".csv","", value)
+  dir_files <- paste0("input/", value)
   dir.create(file.path("input"), showWarnings = FALSE)
   dir.create(file.path(dir_files), showWarnings = FALSE)
   
@@ -57,8 +59,8 @@ for (i in design_files){
   
   panel <- read.csv("metals_meta_expressed.csv", stringsAsFactors = T)
 
-  md$condition <- factor(md$condition, levels = "amo")
-  md$sample_id <- factor(md$sample_id, levels = md$sample_id[order(md$condition)])
+  md$condition <- as.factor(md$condition)
+  md$sample_id <- as.factor(md$sample_id)
   
   sce <- prepData(fs, panel, md)
   
@@ -69,24 +71,10 @@ for (i in design_files){
 ## Plot counts {.tabset .tabset-fade}
 
 ```{r expression, results='asis', echo = FALSE}
-
 for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   cat("### ",i,"\n")
-  p <- plotCounts(sce, color_by = "condition")
-  print(p)
-  cat('\n\n')
-}
-```
-
-## Multi-dimensional scaling {.tabset .tabset-fade}
-
-```{r MDS, results='asis', echo = FALSE}
-
-for (i in design_files){
-  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
-  cat("### ",i,"\n")
-  p <- plotMDS(sce, color_by = "condition")
+  p <- CATALYST::plotCounts(sce, color_by = "sample_id")
   print(p)
   cat('\n\n')
 }
@@ -102,7 +90,7 @@ plotExprHeatmap will show a heatmap on median marker intensities with hierarchic
 for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   cat("### ",i,"\n")
-  p <- plotExprHeatmap(sce, bin_anno = TRUE, row_anno = TRUE)
+  p <- CATALYST::plotExprHeatmap(sce, bin_anno = TRUE, row_anno = TRUE)
   print(p)
   cat('\n\n')
 }
@@ -122,10 +110,10 @@ for (i in design_files){
     filter(use_for_clustering == TRUE) %>% 
     select(antigen) 
 
-  sce <- cluster(sce, features = lineage_markers$antigen, 
+  sce <- CATALYST::cluster(sce, features = lineage_markers$antigen, 
       xdim = 10, ydim = 10, maxK = 20, verbose = FALSE, seed = 1)  
 
-  p <- plotMedExprs(sce, k = "meta8", facet = "cluster_id", 
+  p <- CATALYST::plotMedExprs(sce, k = "meta8", facet = "cluster_id", 
     group_by = "condition", shape_by = "patient_id")
   p$facet$params$ncol <- 4
   
@@ -161,7 +149,7 @@ for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   
   cat("### ",i,"\n")
-  p <- plotMedExprs(sce, facet = "antigen", 
+  p <- CATALYST::plotMedExprs(sce, facet = "antigen", 
     group_by = "condition", shape_by = "patient_id")
 p$facet$params$ncol <- 4
 print(p)
@@ -178,7 +166,7 @@ for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   
   cat("### ",i,"\n")
-  p <- plotClusterExprs(sce, k = "meta8", features = "type")
+  p <- CATALYST::plotClusterExprs(sce, k = "meta8", features = "type")
   print(p)
   cat('\n\n')
 }
@@ -201,7 +189,7 @@ for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   
   cat("### ",i,"\n")
-  p <- plotClusterHeatmap(sce, hm2 = "abundances", draw_freqs = TRUE, cluster_anno = FALSE)
+  p <- CATALYST::plotClusterHeatmap(sce, hm2 = "abundances", draw_freqs = TRUE, cluster_anno = FALSE)
   print(p)
   cat('\n\n')
 }
@@ -218,7 +206,7 @@ for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   
   cat("### ",i,"\n")
-  p <- plotAbundances(sce, k = "meta12", by = "sample_id", group_by = "condition")
+  p <- CATALYST::plotAbundances(sce, k = "meta12", by = "sample_id", group_by = "condition")
   print(p)
   cat('\n\n')
 }
@@ -230,7 +218,7 @@ for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   
   cat("### ",i,"\n")
-  p <- plotAbundances(sce, k = "merging1", by = "cluster_id", group_by = "condition", shape_by = "patient_id")
+  p <- CATALYST::plotAbundances(sce, k = "meta8", by = "cluster_id", group_by = "condition")
   print(p)
   cat('\n\n')
 }
@@ -238,6 +226,21 @@ for (i in design_files){
 
 
 # Dimensionality reduction 
+
+## Multi-dimensional reduction 
+
+```{r}
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  set.seed(1601)
+  
+  cat("### ",i,"\n")
+  p <- CATALYST::plotMDS(sce, color_by = "condition")
+  print(p)
+  cat('\n\n')
+}
+```
+
 
 ## UMAP {.tabset .tabset-fade}
 
@@ -253,9 +256,25 @@ for (i in design_files){
 }
 ```
 
+## MDS {.tabset .tabset-fade}
+
+```{r MDS, results='asis', echo = FALSE}
+
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  cat("### ",i,"\n")
+  sce <- scater::runMDS(sce, exprs_values = "exprs")
+  p <- plotDR(sce, "UMAP", color_by = "meta12") + facet_wrap("condition")
+  print(p)
+  cat('\n\n')
+
+}
+
+```
+
 ## TSNE {.tabset .tabset-fade}
 
-```{r, results='asis', echo = FALSE}
+```{r, results='asis', echo = FALSE, include=FALSE}
 for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   set.seed(1601)
