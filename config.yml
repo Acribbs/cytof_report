@@ -1,0 +1,3 @@
+runUMAP:
+  # Specify the proportion of cells to downsample to
+  downsample: 0.2

@@ -1,0 +1,6 @@
+FCS Filename	Conditions	Doses	Doses Numeric Value	Doses Units	Timepoints	Individuals	Plate Shape	Sample Type	Plate Row	Plate Column	Plate	FCS File Category
+191212_CEL01_Panel_1_0_b_ORB6468.fcs	MGUS	-	-	-	-	ORB6468_MGUS	-	-	-	-	Plate 1	Experiment Files
+191212_CEL01_Panel_1_0_b_ORB6474.fcs	SMM	-	-	-	-	ORB6474_SMM	-	-	-	-	Plate 1	Experiment Files
+191212_CEL01_Panel_1_0_b_ORB6487_.fcs	dx	-	-	-	-	ORB6487_dx	-	-	-	-	Plate 1	Experiment Files
+191212_CEL01_Panel_1_0_b_ORB7346.fcs	MGUS	-	-	-	-	ORB7346_MGUS	-	-	-	-	Plate 1	Experiment Files
+191212_CEL01_Panel_1_0_b_ORB7349.fcs	relapse	-	-	-	-	ORB7349_relapse	-	-	-	-	Plate 1	Experiment Files

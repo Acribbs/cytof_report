@@ -17,6 +17,7 @@ library(tidyverse)
 library(SingleCellExperiment)
 library(scater)
 library(diffcyt)
+library(DropletUtils)
 config <- yaml.load("config.yml")
 ```
 
@@ -79,19 +80,6 @@ for (i in design_files){
 }
 ```
 
-## Multi-dimensional scaling {.tabset .tabset-fade}
-
-```{r MDS, results='asis', echo = FALSE}
-
-for (i in design_files){
-  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
-  cat("### ",i,"\n")
-  p <- plotMDS(sce, color_by = "condition")
-  print(p)
-  cat('\n\n')
-}
-```
-
 
 ## Heatmap of (scaled) median marker expressions {.tabset .tabset-fade}
 
@@ -122,10 +110,10 @@ for (i in design_files){
     filter(use_for_clustering == TRUE) %>% 
     select(antigen) 
 
-  sce <- cluster(sce, features = lineage_markers$antigen, 
+  sce <- CATALYST::cluster(sce, features = lineage_markers$antigen, 
       xdim = 10, ydim = 10, maxK = 20, verbose = FALSE, seed = 1)  
 
-  p <- plotMedExprs(sce, k = "meta8", facet = "cluster_id", 
+  p <- CATALYST::plotMedExprs(sce, k = "meta8", facet = "cluster_id", 
     group_by = "condition", shape_by = "patient_id")
   p$facet$params$ncol <- 4
   
@@ -178,7 +166,7 @@ for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   
   cat("### ",i,"\n")
-  p <- plotClusterExprs(sce, k = "meta8", features = "type")
+  p <- plotClusterExprs(sce, k = "meta2", features = "type")
   print(p)
   cat('\n\n')
 }
@@ -230,21 +218,42 @@ for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   
   cat("### ",i,"\n")
-  p <- plotAbundances(sce, k = "merging1", by = "cluster_id", group_by = "condition", shape_by = "patient_id")
+  p <- plotAbundances(sce, k = "meta2", by = "cluster_id", group_by = "condition", shape_by = "patient_id")
   print(p)
   cat('\n\n')
 }
 ```
 
 
+
 # Dimensionality reduction 
+
+## Multi-dimensional reduction 
+
+```{r}
+for (i in design_files){
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  set.seed(1601)
+  
+  cat("### ",i,"\n")
+  p <- CATALYST::plotMDS(sce, color_by = "condition")
+  print(p)
+  cat('\n\n')
+}
+```
+
 
 ## UMAP {.tabset .tabset-fade}
 
 ```{r, results='asis', echo = FALSE}
+
+# Need to downsample all of the datasets because CyTOF data is too large
+# Will be performed using DropletUtils downsampleMatrix
+
 for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   set.seed(1601)
+  sce <- DropletUtils::downsampleMatrix(counts(sce), prop=0.2)
   sce <- scater::runUMAP(sce, exprs_values = "exprs")
   cat("### ",i,"\n")
   p <- plotDR(sce, "UMAP", color_by = "meta12") + facet_wrap("condition")
@@ -259,6 +268,7 @@ for (i in design_files){
 for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   set.seed(1601)
+  sce <- downsampleMatrix(counts(sce), prop=0.2)
   sce <- scater::runTSNE(sce, exprs_values = "exprs")
   cat("### ",i,"\n")
   p <- plotDR(sce, "TSNE", color_by = "meta12") + facet_wrap("condition")
