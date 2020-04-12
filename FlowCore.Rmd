@@ -278,7 +278,7 @@ for (i in design_files){
 
   sce <- scater::runUMAP(sce, exprs_values="exprs", BPPARAM=bpparam())
   cat("### ",i,"\n")
-  p <- plotDR(sce, "UMAP", color_by = "meta12") + facet_wrap("condition")
+  p <- plotDR(sce, "UMAP") + facet_wrap("condition")
   print(p)
   cat('\n\n')
 }
@@ -293,7 +293,7 @@ for (i in design_files){
   set.seed(1601)
   sce <- scater::runTSNE(sce, exprs_values = "exprs", BPPARAM=bpparam())
   cat("### ",i,"\n")
-  p <- plotDR(sce, "TSNE", color_by = "meta12") + facet_wrap("condition")
+  p <- plotDR(sce, "TSNE") + facet_wrap("condition")
   print(p)
   cat('\n\n')
 }

@@ -26,5 +26,4 @@ exclude:
 - counts
 - expdata
 - '*.R'
-output_dir: FinalReport
-
+output_dir: docs
