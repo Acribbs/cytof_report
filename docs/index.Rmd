@@ -1,0 +1,12 @@
+---
+title: "Welcome"
+output: html_document
+---
+
+The aim of this repostiory is to provide code to automatically generate a basic CyTOF analysis report. The intention is for this report to be first executed in whole by using the build report functionality of Rmarkdown. Users can generate their own bespoke project specific code on top of this. 
+
+You can find out how to run this report by visiting the [how to run report](how_to.html) page. 
+
+```{r}
+siteymlgen::init_siteymlgen()
+```
