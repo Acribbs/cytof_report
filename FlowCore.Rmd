@@ -18,7 +18,10 @@ library(SingleCellExperiment)
 library(scater)
 library(diffcyt)
 library(DropletUtils)
-config <- yaml.load("config.yml")
+library(BiocParallel)
+config <- read_yaml("config.yml")
+register(MulticoreParam())
+bpparam()
 ```
 
 # Input data
@@ -65,7 +68,23 @@ for (i in design_files){
   
   sce <- prepData(fs, panel, md)
   
+  # Define a downsampling ceiling
+  sampling.ceiling <- as.integer(config$downsample)
+  # Being reproducible is a plus
+  set.seed(0)
+
+  ## BUILD A DOWNSAMPLED FLOWSET
+
+  fs.ds <- fsApply(fs, function(ff) {
+    idx <- sample.int(nrow(ff), min(sampling.ceiling, nrow(ff)))
+    ff[idx,]  # alt. ff[order(idx),]
+  })
+  fs.ds
+  
+  sce.downsample <- prepData(fs.ds, panel, md)
+  
   assign(paste("sce", i, sep = "."), sce)
+  assign(paste("sce.downsample", i, sep = "."), sce.downsample)
 }
 ```
 
@@ -75,11 +94,8 @@ for (i in design_files){
 for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   cat("### ",i,"\n")
-<<<<<<< HEAD
   p <- plotCounts(sce, color_by = "condition")
-=======
-  p <- CATALYST::plotCounts(sce, color_by = "sample_id")
->>>>>>> 71750fec23882c6c09eae73446e511b9c144273e
+
   print(p)
   cat('\n\n')
 }
@@ -171,11 +187,8 @@ for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   
   cat("### ",i,"\n")
-<<<<<<< HEAD
   p <- plotClusterExprs(sce, k = "meta2", features = "type")
-=======
-  p <- CATALYST::plotClusterExprs(sce, k = "meta8", features = "type")
->>>>>>> 71750fec23882c6c09eae73446e511b9c144273e
+
   print(p)
   cat('\n\n')
 }
@@ -227,11 +240,7 @@ for (i in design_files){
   sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
   
   cat("### ",i,"\n")
-<<<<<<< HEAD
   p <- plotAbundances(sce, k = "meta2", by = "cluster_id", group_by = "condition", shape_by = "patient_id")
-=======
-  p <- CATALYST::plotAbundances(sce, k = "meta8", by = "cluster_id", group_by = "condition")
->>>>>>> 71750fec23882c6c09eae73446e511b9c144273e
   print(p)
   cat('\n\n')
 }
@@ -264,10 +273,10 @@ for (i in design_files){
 # Will be performed using DropletUtils downsampleMatrix
 
 for (i in design_files){
-  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.downsample.SAMPLE_FILE"))
   set.seed(1601)
-  sce <- DropletUtils::downsampleMatrix(counts(sce), prop=0.2)
-  sce <- scater::runUMAP(sce, exprs_values = "exprs")
+
+  sce <- scater::runUMAP(sce, exprs_values="exprs", BPPARAM=bpparam())
   cat("### ",i,"\n")
   p <- plotDR(sce, "UMAP", color_by = "meta12") + facet_wrap("condition")
   print(p)
@@ -280,10 +289,9 @@ for (i in design_files){
 
 ```{r, results='asis', echo = FALSE, include=FALSE}
 for (i in design_files){
-  sce <- get(gsub("SAMPLE_FILE",i , "sce.SAMPLE_FILE"))
+  sce <- get(gsub("SAMPLE_FILE",i , "sce.downsample.SAMPLE_FILE"))
   set.seed(1601)
-  sce <- downsampleMatrix(counts(sce), prop=0.2)
-  sce <- scater::runTSNE(sce, exprs_values = "exprs")
+  sce <- scater::runTSNE(sce, exprs_values = "exprs", BPPARAM=bpparam())
   cat("### ",i,"\n")
   p <- plotDR(sce, "TSNE", color_by = "meta12") + facet_wrap("condition")
   print(p)

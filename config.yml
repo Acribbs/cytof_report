@@ -1,3 +1,2 @@
-runUMAP:
-  # Specify the proportion of cells to downsample to
-  downsample: 0.2
+# Specify the maximum number of cells to downsample
+downsample: 5000
