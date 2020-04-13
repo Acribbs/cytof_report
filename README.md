@@ -2,6 +2,8 @@
 
 The aim of this Rmarkdown code is to provide the starting point for your CyTOF analysis. 
 
+For more documentation and to view an example final report please view the ![documentation](https://acribbs.github.io/cytof_report/)
+
 The report uses the Bioconductor packaged Flowcore and CATALYST to prodivde summary statistics and basic high dimensional cluserting and visualisations. These can be useful for determining the quality of your CyTOF data. Once the basic report has been generated you are then free to extend the report by adding your own project specific analysis code. 
 
 ## Configuring the report
