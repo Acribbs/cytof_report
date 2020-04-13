@@ -1,4 +1,4 @@
 ﻿file_name,sample_id,condition,patient_id,donor
-./c07_PANEL4_3_concatenated.fcs,7,amo,pr,2
-./c20_PANEL4_3_concatenated.fcs,20,amo,wt,2
-./c12_PANEL4_3_concatenated.fcs,12,amo,at,2
+./c07_PANEL4_3_concatenated.fcs,7,pr,pr,2
+./c20_PANEL4_3_concatenated.fcs,20,wt,wt,2
+./c12_PANEL4_3_concatenated.fcs,12,at,at,2

@@ -401,6 +401,14 @@ div.tocify {
 <pre class="r"><code># design_&lt;dir&gt;_&lt;sample&gt;.csv
 design_files &lt;- list.files(pattern = &quot;design_&quot;)
 
+.unlink &lt;- function(x, recursive = FALSE, force = FALSE) {
+  if (unlink(x, recursive, force) == 0)
+    return(invisible(TRUE))
+  stop(sprintf(&quot;Failed to remove [%s]&quot;, x))
+}
+
+unlink(&quot;input/&quot;, recursive = TRUE)
+
 for (i in design_files){
   x &lt;- strsplit(i, &quot;_&quot;)
   condition &lt;- x[[1]][2]
@@ -557,7 +565,7 @@ for (i in design_files){
 </div>
 <div id="differential-analysis" class="section level1 tabset tabset-fade">
 <h1>Differential analysis</h1>
-<p>To be completed when we have full data and not just test data</p>
+<p>Modify (and uncomment) the following document below to include bespoke analysis code for your project.</p>
 <pre class="r"><code>#design &lt;- createDesignMatrix(ei(sce), cols_design = &quot;condition&quot;)
 #contrast &lt;- createContrast(c(0, 1))</code></pre>
 </div>

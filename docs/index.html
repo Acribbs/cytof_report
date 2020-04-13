@@ -392,11 +392,13 @@ div.tocify {
 <p>In order to run this report you will need the following input files:</p>
 <ul>
 <li>One or more design file(s) named design_<experimentName>_<SomethingElse>.csv.</li>
-<li>A csv file containing the metals expressed in the samples.</li>
-<li>fcs files</li>
+<li>A csv file containing the metals expressed in the samples. Called metals_meta_expressed.csv</li>
+<li>fcs files placed within the directory that the Rmarkdown report will be executed</li>
 </ul>
 <p>All input files are reuired to be placed within the directory of the repository before running the report.</p>
-<p>What still needs to be implimented in this report: * Gating strategy * Differential analysis</p>
+<p>In order to begin running the report you will need to double click the cutof_report.Rproj file to open the project. Correctly configure build tools so that the “Build website” button is accessible.</p>
+<p>We recommend running the report first without any modifications to the report by pressing Build website. Once the website has rendered the output will be within the docs folder and will look similar to the FlowCore tab.</p>
+<p>Next, modify the analysis code to fit your requirements then add additional analysis code and re-run the report.</p>
 </div>
 
 
