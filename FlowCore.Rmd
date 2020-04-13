@@ -32,6 +32,14 @@ Input the data from design file into a SingleCellExperiment class object using t
 # design_<dir>_<sample>.csv
 design_files <- list.files(pattern = "design_")
 
+.unlink <- function(x, recursive = FALSE, force = FALSE) {
+  if (unlink(x, recursive, force) == 0)
+    return(invisible(TRUE))
+  stop(sprintf("Failed to remove [%s]", x))
+}
+
+unlink("input/", recursive = TRUE)
+
 for (i in design_files){
   x <- strsplit(i, "_")
   condition <- x[[1]][2]
@@ -301,7 +309,7 @@ for (i in design_files){
 
 # Differential analysis {.tabset .tabset-fade}
 
-To be completed when we have full data and not just test data
+Modify (and uncomment) the following document below to include bespoke analysis code for your  project.
 
 ```{r}
 #design <- createDesignMatrix(ei(sce), cols_design = "condition")
