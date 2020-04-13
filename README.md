@@ -10,7 +10,7 @@ The report uses the Bioconductor packaged Flowcore and CATALYST to prodivde summ
 
 The report requires you to modify the values within the config.yml file to customise the running of the workflow and add the required information within the *design_*.csv* file that specifies the sample name and meta data associated with your project.
 
-FCS files are then placed within the data/ directory and the report ran using the Rstudio and the "Build Website" functionality.
+FCS files are then placed within the top repo directory and the report ran using the Rstudio and the "Build Website" functionality.
 
 # Step by step
 
